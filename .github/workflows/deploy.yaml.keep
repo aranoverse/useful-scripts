@@ -1,0 +1,39 @@
+name: WEBSITE CI
+
+on:
+  push:
+    branches:
+      - "main"
+      - "releases/**"
+    tags:
+      - "releases/**"
+  pull_request:
+    branches:
+      - "main"
+      - "releases/**"
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Use Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 'v16.20.0'
+
+      - name: Build Web
+        run: |
+          mv .env.production .env 
+          yarn
+          yarn build
+
+      - name: Deploy Website
+        env:
+          KEY: ${{ secrets.ID_RSA }}
+          HOST: ${{ secrets.HOST }}
+          WORKSPACE: ${{ secrets.WORKSPACE }}
+        run: |
+          mkdir -p ~/.ssh/ && echo "$KEY" > ~/.ssh/id_rsa && chmod 600 ~/.ssh/id_rsa
+          scp -o StrictHostKeyChecking=no -r dist ${HOST}:${WORKSPACE}/website
+          ssh -o StrictHostKeyChecking=no ${HOST} "docker exec nginx nginx -s reload"
