@@ -8,6 +8,7 @@ sudo systemctl enable docker
 
 # avoid sudo auth
 sudo usermod -aG docker $USER
+sudo gpasswd -a $USER docker
 
 # reload user group
 newgrp docker
