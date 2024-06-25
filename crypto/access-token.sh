@@ -11,19 +11,21 @@ iat=$((${now} - 60)) # Issues 60 seconds in the past
 exp=$((${now} + 600)) # Expires 10 minutes in the future
 
 b64enc() { openssl base64 | tr -d '=' | tr '/+' '_-' | tr -d '\n'; }
-
+# Header JSON
 header_json='{
-    "typ":"JWT",
-    "alg":"RS256"
+  "typ": "JWT",
+  "alg": "RS256"
 }'
 # Header encode
 header=$( echo -n "${header_json}" | b64enc )
 
-payload_json='{
-    "iat":'"${iat}"',
-    "exp":'"${exp}"',
-    "iss":'"${client_id}"'
-}'
+# Payload JSON
+payload_json=$(printf '{
+  "iat": %d,
+  "exp": %d,
+  "iss": "%s"
+}' "${iat}" "${exp}" "${client_id}")
+
 # Payload encode
 payload=$( echo -n "${payload_json}" | b64enc )
 
